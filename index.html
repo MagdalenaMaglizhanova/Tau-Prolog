@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mini Prolog IDE с Tau-Prolog</title>
+  <script src="https://cdn.jsdelivr.net/npm/tau-prolog@0.3.1/modules/core.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tau-prolog@0.3.1/modules/lists.js"></script>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    textarea { width: 100%; height: 150px; font-family: monospace; margin-bottom: 10px; }
+    button { padding: 8px 16px; }
+    pre { background: #f0f0f0; padding: 10px; border-radius: 5px; }
+  </style>
+</head>
+<body>
+
+  <h2>🧠 Mini Prolog IDE</h2>
+
+  <label>📜 Prolog код:</label><br/>
+  <textarea id="code">father(john, mary). father(john, bob).</textarea><br/>
+
+  <label>❓ Заявка (Query):</label><br/>
+  <input type="text" id="query" value="father(john, X)." style="width:100%; padding: 8px;"><br/><br/>
+
+  <button onclick="run()">▶️ Изпълни</button>
+
+  <h3>📤 Отговори:</h3>
+  <pre id="output"></pre>
+
+  <script>
+    function run() {
+      const code = document.getElementById("code").value;
+      const query = document.getElementById("query").value;
+      const output = document.getElementById("output");
+
+      const session = pl.create();
+      session.consult(code, {
+        success: () => {
+          session.query(query, {
+            success: () => {
+              output.textContent = '';
+              session.answers(answer => {
+                if (answer === false || answer === null) {
+                  if (output.textContent === '') {
+                    output.textContent = 'Няма отговори.';
+                  } else {
+                    output.textContent += "\nКрай.";
+                  }
+                } else {
+                  output.textContent += session.format_answer(answer) + '\n';
+                }
+              });
+            },
+            error: err => {
+              output.textContent = 'Грешка в заявката: ' + err;
+            }
+          });
+        },
+        error: err => {
+          output.textContent = 'Грешка в Prolog кода: ' + err;
+        }
+      });
+    }
+  </script>
+
+</body>
+</html>
